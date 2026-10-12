@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Abandoned But Not Forgotten — Lost Machines of the Moon & Mars</title>
+<meta name="description" content="Abandoned But Not Forgotten is a cinematic scrollytelling website that invites you to explore NASAs discarded hardware on the Moon and Mars." />
+<!-- LLM UPDATE MARKERS:
+  - title: customize per project
+  - description: customize per project
+  - All visible text content can be updated per project needs
+  - Site name "Abandoned But Not Forgotten" can be changed
+  -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@300;400;700&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- FIXED BACKGROUNDS -->
+<canvas id="space-canvas"></canvas>
+<div id="dust-overlay"></div>
+<canvas id="storm-canvas"></canvas>
+<div id="vignette"></div>
+<div id="cursor-dot" aria-hidden="true"></div>
+<div id="cursor-ring" aria-hidden="true"></div>
+<div id="cursor-label" aria-hidden="true"></div>
+<nav id="dots" aria-label="section jump"></nav>
+
+<!-- HUD FRAME -->
+<div class="hud-frame" aria-hidden="true">
+  <div class="hud-corner tl"></div>
+  <div class="hud-corner tr"></div>
+  <div class="hud-corner bl"></div>
+  <div class="hud-corner br"></div>
+  <div class="hud-topbar">
+    <span class="hud-dot"></span>
+    <span id="hud-clock">T+ 00:00:00</span>
+    <span class="hud-sep">|</span>
+    <span id="hud-cam">CAM 01 · ORBITAL</span>
+    <span class="hud-sep">|</span>
+    <span id="hud-signal">SIGNAL ▂▄▆█ 98%</span>
+  </div>
+  <div class="hud-bottombar">
+    <span>SCROLL TO PILOT ↓</span>
+    <div class="scroll-progress"><div id="scroll-progress-fill"></div></div>
+    <span id="hud-coord">LAT 0.00 · LON 0.00</span>
+  </div>
+</div>
+
+<!-- LOADER / LANDING ENTRY -->
+<div id="loader">
+  <div class="loader-inner">
+    <div class="loader-eyebrow">NASA DEEP ARCHIVE // FILE 1969–2024</div>
+    <h1 class="loader-title">DESCENT<br/>INITIATED</h1>
+    <div class="loader-bar-wrap"><div id="loader-bar"></div></div>
+    <div id="loader-status">ACQUIRING SIGNAL…</div>
+    <button id="enter-btn" hidden>▶ ENTER THE FIELD</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo">A<span>·</span>BNF <em>MOON/MARS ARCHIVE</em></div>
+  <div class="nav-links">
+    <a href="#moon">MOON</a>
+    <a href="#mars">MARS</a>
+    <a href="#maps">MAPS</a>
+    <a href="#lab">FIELD LAB</a>
+    <a href="#guide">GUIDE</a>
+    <a href="#memorial">MEMORIAL</a>
+  </div>
+  <button id="sound-btn" aria-label="toggle sound">
+    <canvas id="wave-mini" width="48" height="20"></canvas>
+    <span id="sound-label">SOUND OFF</span>
+  </button>
+  <button id="term-btn" aria-label="open terminal">⌁ CMD</button>
+</nav>
+
+<main id="story">
+
+  <!-- HERO -->
+  <section class="panel hero" id="hero" data-label="Descent" data-cam="ORBITAL" data-scene="space">
+    <div class="eyebrow reveal">AN INTERACTIVE SCROLLY­TELLING TRANSMISSION</div>
+    <h1 class="mega reveal">ABANDONED<br/><span class="outline">BUT NOT</span><br/>FORGOTTEN</h1>
+    <p class="lede reveal">They carried us there — then we left them behind. Rovers with dead batteries. Landers frozen mid-bow. Footprints that will outlive us all. Scroll to fly from Earth to the boneyards of two worlds.</p>
+    <div class="hero-stats reveal">
+      <div><b data-count="14">0</b><span>MEMORIAL SITES<br/>MAPPED</span></div>
+      <div><b data-count="207000">0</b><span>KG OF HUMAN<br/>HARDWARE OFF-EARTH*</span></div>
+      <div><b data-count="5111">0</b><span>SOLS — OPPORTUNITY'S<br/>RECORD</span></div>
+      <div><b data-count="72">0</b><span>FLIGHTS — INGENUITY<br/>HELICOPTER</span></div>
+    </div>
+    <div class="scroll-hint"><div class="mouse"><div class="wheel"></div></div><span>SCROLL TO DESCEND</span></div>
+    <p class="fineprint">* ~193,000 kg on the Moon (NASA History catalogue, 2012) + ~14,000 kg on Mars. Coordinates: LROC / HiRISE-verified where published.</p>
+  </section>
+
+  <!-- TICKER (ported from web-1) -->
+  <div class="ticker" aria-hidden="true"><div class="ticker-track" id="ticker-track"></div></div>
+
+  <!-- TRANSIT -->
+  <section class="panel transit" id="transit" data-label="Transit" data-cam="TRANSIT" data-scene="transit">
+    <div class="transit-card reveal">
+      <div class="mono-label">CHAPTER 01 — LEAVING EARTH</div>
+      <h2>You are the camera now.</h2>
+      <p>Keep scrolling. The stars will stretch. Earth falls away behind you. First stop: a grey world with no wind — where everything we dropped in 1969 is exactly where we left it.</p>
+      <div class="telemetry-strip">
+        <div>VEL <b id="t-vel">0.0</b> km/s</div>
+        <div>ALT <b id="t-alt">408</b> km</div>
+        <div>DEST <b>MOON → 384,400 km</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOON -->
+  <section class="panel moon" id="moon" data-label="The Moon" data-cam="LUNAR SURFACE" data-scene="moon">
+    <div class="chapter-head reveal">
+      <div class="mono-label light">CHAPTER 02 — THE MOON · SEA OF TRANQUILITY · 0.67°N 23.47°E</div>
+      <h2 class="chapter-title">No wind. No rust.<br/>Only footprints.</h2>
+      <p class="chapter-sub">On the Moon nothing decays. There is no air, no water, no life to bury our trash. Every bootprint, every crashed stage, every golf ball sits in perfect vacuum — a museum with no roof.</p>
+    </div>
+
+    <div class="artifact-grid">
+      <!-- EAGLE -->
+      <article class="artifact reveal" data-artifact="eagle">
+        <div class="artifact-visual moon-tex">
+          <div class="hotspot" style="--x:62%;--y:38%" data-hotspot="descent engine"><span></span></div>
+          <div class="hotspot" style="--x:30%;--y:60%" data-hotspot="ladder / plaque"><span></span></div>
+          <div class="hotspot" style="--x:78%;--y:66%" data-hotspot="footpad"><span></span></div>
+          <div class="artifact-illus eagle-illus" aria-hidden="true"></div>
+          <div class="artifact-tag">APOLLO 11 · 1969 · STILL THERE</div>
+        </div>
+        <div class="artifact-body">
+          <h3>Eagle Descent Stage</h3>
+          <p class="mono">MASS 10,334 kg · STATUS: ETERNAL LANDER</p>
+          <p>Armstrong and Aldrin blasted off its roof and left the bottom half behind as a launch pad. It still sits in the dust, ladder out, plaque reading <em>“We came in peace.”</em></p>
+          <button class="expand-btn" data-expand>▸ INSPECT HOTSPOTS</button>
+          <div class="hotspot-info" hidden></div>
+        </div>
+      </article>
+
+      <!-- LRV -->
+      <article class="artifact reveal" data-artifact="lrv">
+        <div class="artifact-visual moon-tex">
+          <div class="hotspot" style="--x:40%;--y:45%" data-hotspot="wire-mesh wheels"><span></span></div>
+          <div class="hotspot" style="--x:65%;--y:30%" data-hotspot="TV camera"><span></span></div>
+          <div class="hotspot" style="--x:55%;--y:70%" data-hotspot="abandoned fender repair"><span></span></div>
+          <div class="artifact-illus lrv-illus" aria-hidden="true"></div>
+          <div class="artifact-tag">APOLLO 15·16·17 · 1971–72 · 3× ABANDONED</div>
+        </div>
+        <div class="artifact-body">
+          <h3>Lunar Roving Vehicles</h3>
+          <p class="mono">TOP SPEED 18 km/h · RANGE 92 km TOTAL · BATTERIES DEAD</p>
+          <p>Three electric dune buggies, parked forever. Apollo 17’s fender was fixed with duct tape and a lunar map. The TV camera on the last one filmed the crew’s departure — then stared at an empty plain.</p>
+          <button class="expand-btn" data-expand>▸ INSPECT HOTSPOTS</button>
+          <div class="hotspot-info" hidden></div>
+        </div>
+      </article>
+
+      <!-- ALSEP + JUNK -->
+      <article class="artifact reveal" data-artifact="alsep">
+        <div class="artifact-visual moon-tex">
+          <div class="hotspot" style="--x:50%;--y:40%" data-hotspot="retroreflector — still used!"><span></span></div>
+          <div class="hotspot" style="--x:25%;--y:65%" data-hotspot="96 bags of human waste"><span></span></div>
+          <div class="hotspot" style="--x:75%;--y:55%" data-hotspot="discarded Hasselblad cameras"><span></span></div>
+          <div class="artifact-illus alsep-illus" aria-hidden="true"></div>
+          <div class="artifact-tag">ALSEP + JETTISON · 1969–72 · 100+ SITES</div>
+        </div>
+        <div class="artifact-body">
+          <h3>The Quiet Instruments & The Trash</h3>
+          <p class="mono">LASERS STILL PINGED FROM EARTH · SEISMOMETERS SILENT SINCE 1977</p>
+          <p>We left mirrors that scientists still shoot lasers at — and 96 bags of waste, backpacks, boots, and cameras stripped for film. The Moon is both laboratory and landfill.</p>
+          <button class="expand-btn" data-expand>▸ INSPECT HOTSPOTS</button>
+          <div class="hotspot-info" hidden></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- MAPS (ported from web-1 PlanetSVG + site lists + drawer trigger) -->
+  <section class="panel maps" id="maps" data-label="Survey Maps" data-cam="SURVEY MAP" data-scene="space">
+    <div class="chapter-head reveal">
+      <div class="mono-label">INTERLUDE — SURVEY MAPS · TAP A BEACON TO OPEN ITS FILE</div>
+      <h2 class="chapter-title">14 sites. Two worlds.<br/>One atlas.</h2>
+      <p class="chapter-sub">SVG planets with pulsing landing-site beacons, ported from web-1. Same coordinates, same stories — restyled to this HUD. Click any pin or list entry for the full field report.</p>
+      <div class="filter-row">
+        <input id="site-search" type="search" placeholder="⌕ search sites, missions, gear…" aria-label="search sites" />
+        <button class="filter-btn active" data-star="all">✨ ALL</button>
+        <button class="filter-btn" data-star="favs">★ SAVED</button>
+      </div>
+    </div>
+    <div class="map-grid-2">
+      <div class="map-box reveal">
+        <div class="mono-label light">▸ MOON · 6 SITES</div>
+        <svg id="moon-svg" viewBox="0 0 100 100" role="img" aria-label="Moon map"></svg>
+        <div class="chip-row"><span class="chip">◉ pulsing = landing site</span><span class="chip">LROC-verified</span></div>
+        <div class="site-list" id="moon-list"></div>
+      </div>
+      <div class="map-box reveal">
+        <div class="mono-label accent">▸ MARS · 8 SITES</div>
+        <svg id="mars-svg" viewBox="0 0 100 100" role="img" aria-label="Mars map"></svg>
+        <div class="chip-row"><span class="chip">◉ 8 NASA sites</span><span class="chip">HiRISE-confirmed</span></div>
+        <div class="site-list" id="mars-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3D LAB -->
+  <section class="panel lab" id="lab" data-label="Field Lab" data-cam="FIELD LAB" data-scene="lab">
+    <div class="lab-head reveal">
+      <div class="mono-label">CHAPTER 03 — FIELD LAB · DRAG TO ROTATE</div>
+      <h2>Touch a ghost.</h2>
+      <p>This is a procedural echo of a Mars rover, rendered live in your browser. Drag it. Zoom it. Imagine its last winter.</p>
+    </div>
+    <div class="lab-grid">
+      <div class="viewer-wrap reveal">
+        <canvas id="rover-canvas"></canvas>
+        <div class="viewer-hud">
+          <span id="rover-name">MER-A · SPIRIT CLASS</span>
+          <span>◐ DRAG · SCROLL TO ZOOM</span>
+        </div>
+        <div class="viewer-btns">
+          <button data-rover="spirit" class="active">SPIRIT</button>
+          <button data-rover="opportunity">OPPORTUNITY</button>
+          <button data-rover="ingenuity">INGENUITY</button>
+        </div>
+      </div>
+      <div class="lab-controls reveal">
+        <h3>TIME-LAPSE: DUST IS DEATH</h3>
+        <p>On Mars, dust coats solar panels until rovers starve. Drag the slider to fast-forward years of accumulation on the panels above.</p>
+        <label class="slider-label">DUST ACCUMULATION <b id="dust-val">20%</b></label>
+        <input type="range" id="dust-slider" min="0" max="100" value="20" />
+        <div class="toggle-row">
+          <button id="storm-btn">◉ TRIGGER SANDSTORM</button>
+          <button id="reset-btn">↺ RESET</button>
+        </div>
+        <div class="power-meter">
+          <div class="power-label">POWER OUTPUT <b id="power-val">670 Wh</b></div>
+          <div class="power-bar"><div id="power-fill"></div></div>
+        </div>
+        <p class="lab-note">Opportunity died this way: a 2018 planet-wide dust storm blotted the sun for months. Last message, translated by engineers: <em>“My battery is low and it’s getting dark.”</em></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARS -->
+  <section class="panel mars" id="mars" data-label="Mars Surface" data-cam="MARS SURFACE" data-scene="mars">
+    <div class="chapter-head reveal">
+      <div class="mono-label accent">CHAPTER 04 — MARS · MERIDIANI → JEZERO · −63°C · DUST</div>
+      <h2 class="chapter-title">The red boneyard<br/>keeps growing.</h2>
+      <p class="chapter-sub">Mars has weather. Wind buries, uncovers, sandblasts. Each machine below outlived its warranty — then Mars took it back.</p>
+      <div class="scrub-row">
+        <label class="slider-label">TIMELINE SCRUBBER <b id="year-val">1969 → 2024</b></label>
+        <input type="range" id="year-slider" min="1969" max="2024" value="2024" />
+        <div class="chip-row"><span class="chip">drag to dim everything after the year</span></div>
+      </div>
+    </div>
+
+    <div class="timeline" id="mars-timeline">
+      <!-- rendered from SITES (web-1 data) by app.js -->
+    </div>
+  </section>
+
+  <!-- FIELD GUIDE (ported from web-1, filterable cards) -->
+  <section class="panel guide" id="guide" data-label="Field Guide" data-cam="FIELD GUIDE" data-scene="space">
+    <div class="chapter-head reveal">
+      <div class="mono-label">CHAPTER 04B — FIELD GUIDE TO SPACE JUNK (THE BELOVED KIND)</div>
+      <h2 class="chapter-title">What exactly<br/>did we drop?</h2>
+      <p class="chapter-sub">All 14 web-1 site files, filterable. Each card opens the full drawer report.</p>
+      <div class="filter-row">
+        <button class="filter-btn active" data-filter="all">✨ ALL WORLDS</button>
+        <button class="filter-btn" data-filter="moon">🌙 MOON ONLY</button>
+        <button class="filter-btn" data-filter="mars">🔴 MARS ONLY</button>
+      </div>
+    </div>
+    <div class="cards" id="guide-cards"></div>
+  </section>
+
+  <!-- TELEMETRY LOG -->
+  <section class="panel telemetry" id="telemetry" data-label="DSN Feed" data-cam="DSN UPLINK" data-scene="space">
+    <div class="chapter-head reveal">
+      <div class="mono-label">LIVE FEED — DEEP SPACE NETWORK (SIMULATED)</div>
+      <h2 class="chapter-title decode">Listening to ghosts.</h2>
+      <p class="chapter-sub">A fake-but-plausible DSN stream stitched from real mission events. Hover to freeze. Every line is grounded in a true date or telemetry quirk.</p>
+    </div>
+    <div class="log-wrap reveal">
+      <div class="log-head"><span>◉ DSN MADRID · GOLDSTONE · CANBERRA</span><button id="log-pause">❚❚ PAUSE</button></div>
+      <div id="dsn-log" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- MOON VS MARS -->
+  <section class="panel compare" id="compare" data-label="Comparison" data-cam="COMPARATIVE" data-scene="space">
+    <div class="chapter-head reveal">
+      <div class="mono-label">HEAD TO HEAD — WHY THE BONEYARDS DIFFER</div>
+      <h2 class="chapter-title decode">Two graveyards,<br/>two rules.</h2>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-card moon-c reveal" data-tilt>
+        <div class="mono-label light">🌙 MOON</div>
+        <h3>Perfect preservation</h3>
+        <div class="stat-bar" data-w="4"><span>GRAVITY 1.62 m/s²</span><div><i></i></div></div>
+        <div class="stat-bar" data-w="2"><span>WIND 0 km/h · FOREVER</span><div><i></i></div></div>
+        <div class="stat-bar" data-w="100"><span>PRESERVATION 100%</span><div><i></i></div></div>
+        <div class="stat-bar" data-w="8"><span>TEMP SWING ±280°C</span><div><i></i></div></div>
+        <p>Footprints last ~1M years. Golf balls, plaques, crashed stages — vacuum-sealed. Only micrometeorites sand them down, grain by grain.</p>
+      </div>
+      <div class="compare-card mars-c reveal" data-tilt>
+        <div class="mono-label accent">🔴 MARS</div>
+        <h3>Slow burial</h3>
+        <div class="stat-bar" data-w="23"><span>GRAVITY 3.71 m/s²</span><div><i></i></div></div>
+        <div class="stat-bar" data-w="72"><span>WIND ≤ 100 km/h DUST</span><div><i></i></div></div>
+        <div class="stat-bar" data-w="45"><span>PRESERVATION ~45%</span><div><i></i></div></div>
+        <div class="stat-bar" data-w="60"><span>TEMP −125…+20°C</span><div><i></i></div></div>
+        <p>Dust devils wash rovers clean, then planet-wide storms starve them. Phoenix was crushed by ice. InSight became a dune. Mars curates by burying.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ENCYCLOPEDIA -->
+  <section class="panel ency" id="ency" data-label="Manifest" data-cam="MANIFEST" data-scene="space">
+    <div class="chapter-head reveal">
+      <div class="mono-label">MANIFEST — EVERY ARTIFACT GROUP, COUNTED</div>
+      <h2 class="chapter-title decode">What did we actually leave?</h2>
+      <p class="chapter-sub">Flattened from all 14 site files. Search it. The weird stuff is real: javelins, golf balls, a family photo, a piece of the Wright Flyer on Mars.</p>
+      <div class="filter-row"><input id="gear-search" type="search" placeholder="⌕ filter gear… e.g. parachute, camera, RTG" aria-label="filter gear" /></div>
+    </div>
+    <div class="gear-cloud reveal" id="gear-cloud"></div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="panel quiz" id="quiz" data-label="Psych Eval" data-cam="PSYCH EVAL" data-scene="space">
+    <div class="quiz-card reveal">
+      <div class="mono-label">PSYCH EVAL — WHICH GHOST ARE YOU?</div>
+      <h2 id="quiz-q">Loading psych eval…</h2>
+      <div class="quiz-opts" id="quiz-opts"></div>
+      <div class="quiz-foot"><span id="quiz-prog"></span><button id="quiz-restart" hidden>↺ RETAKE</button></div>
+    </div>
+  </section>
+
+  <!-- LANDER GAME -->
+  <section class="panel game" id="game" data-label="Simulator" data-cam="SIMULATOR" data-scene="moon">
+    <div class="chapter-head reveal">
+      <div class="mono-label light">SIMULATOR — DON'T CRASH THE EAGLE</div>
+      <h2 class="chapter-title decode">Land it yourself.</h2>
+      <p class="chapter-sub">Hold <b>SPACE</b> (or touch/hold the pad) to burn. Touch down under <b>4 m/s</b> with fuel left. Gravity 1.62 m/s² — the Moon forgives nothing.</p>
+    </div>
+    <div class="game-wrap reveal">
+      <div class="game-top">
+        <div class="diff-row" role="group" aria-label="gravity">
+          <button data-g="1.62" class="active">🌙 MOON · 1.62</button>
+          <button data-g="3.71">🔴 MARS · 3.71</button>
+        </div>
+        <div class="best">BEST TOUCHDOWN <b id="lander-best">—</b></div>
+      </div>
+      <div class="lander-stage">
+        <canvas id="lander-canvas" width="720" height="380"></canvas>
+        <div id="lander-overlay">
+          <div class="ov-eyebrow">EAGLE SIMULATOR · APOLLO 11</div>
+          <h3 id="ov-title">Don't crash the Eagle.</h3>
+          <p id="ov-sub">Hold <b>SPACE / W / ↑</b> or hold the burn pad. Touch down under <b>4 m/s</b> with fuel left. Under <b>1.5 m/s</b> for three stars.</p>
+          <div class="ov-stats" id="ov-stats" hidden></div>
+          <button id="ov-btn">▶ LAUNCH DESCENT</button>
+        </div>
+      </div>
+      <div class="gauges">
+        <div class="gauge"><label>ALT <b id="g-alt">220m</b></label><div class="gbar"><i id="g-alt-fill"></i></div></div>
+        <div class="gauge"><label>VERT SPEED <b id="g-vel">0.0 m/s</b> <span class="safe-mark">▼ SAFE ≤ 4</span></label><div class="gbar vel"><i id="g-vel-fill"></i></div></div>
+        <div class="gauge"><label>FUEL <b id="g-fuel">100%</b></label><div class="gbar fuel"><i id="g-fuel-fill"></i></div></div>
+      </div>
+      <div class="game-hud"><span id="lander-stat">T+0.0s · STANDBY</span><span id="lander-warn"></span><button id="lander-reset">↺ RETRY</button></div>
+      <button id="lander-pad">🔥 HOLD TO BURN</button>
+      <div id="lander-msg">press LAUNCH — gentle, commander</div>
+    </div>
+  </section>
+
+  <!-- SOUND -->
+  <section class="panel sound" id="sound" data-label="Audio" data-cam="DEEP LISTEN" data-scene="space">
+    <div class="sound-card reveal">
+      <div class="mono-label">CHAPTER 05 — WHAT SILENCE SOUNDS LIKE</div>
+      <h2>Turn the static up.</h2>
+      <p>Voyager’s plasma hum, Apollo’s Quindar beeps, Martian wind recorded by Perseverance’s mic — synthesized live with WebAudio. No files. Just math pretending to be ghosts.</p>
+      <div class="sound-row">
+        <button id="big-sound-btn">▶ PLAY TRANSMISSION</button>
+        <canvas id="wave-big" width="520" height="90"></canvas>
+      </div>
+      <div class="sound-modes">
+        <button data-mode="static" class="active">DEEP STATIC</button>
+        <button data-mode="beeps">QUINDAR BEEPS</button>
+        <button data-mode="wind">MARS WIND</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEMORIAL -->
+  <section class="panel memorial" id="memorial" data-label="Memorial" data-cam="MEMORIAL" data-scene="mars">
+    <div class="reveal">
+      <div class="mono-label accent">FINAL TRANSMISSION</div>
+      <h2 class="chapter-title">They were never junk.<br/>They were crew.</h2>
+      <p class="chapter-sub">Every dead machine bought the next one life: Sojourner taught Spirit, Spirit taught Curiosity, Ingenuity taught us to fly. Leave a light on for them.</p>
+      <div class="memorial-wall" id="memorial-wall">
+        <button class="candle" data-n="Eagle">🕯 Eagle <span>1969</span></button>
+        <button class="candle" data-n="LRV-3">🕯 LRV-3 <span>1972</span></button>
+        <button class="candle" data-n="Sojourner">🕯 Sojourner <span>1997</span></button>
+        <button class="candle" data-n="Spirit">🕯 Spirit <span>2010</span></button>
+        <button class="candle" data-n="Phoenix">🕯 Phoenix <span>2008</span></button>
+        <button class="candle" data-n="Opportunity">🕯 Oppy <span>2018</span></button>
+        <button class="candle" data-n="InSight">🕯 InSight <span>2022</span></button>
+        <button class="candle" data-n="Ingenuity">🕯 Ginny <span>2024</span></button>
+      </div>
+      <p class="lit-count"><b id="lit-count">0</b> lights lit · <span id="lit-names">click a candle to honor a machine</span></p>
+      <div class="epitaph-stage reveal">
+        <div class="mono-label accent">◉ ROTATING EPITAPHS — FROM THE 14 FILES</div>
+        <div id="epitaph-car">“…”</div>
+        <div class="epitaph-dots" id="epitaph-dots"></div>
+      </div>
+    </div>
+    <footer>
+      <div>ABANDONED BUT NOT FORGOTTEN · web-2 HUD + web-1 archive (14 sites) · Three.js + GSAP + WebAudio</div>
+      <div>Sources: Catalogue of Manmade Material on the Moon (NASA History, 2012) · NSSDCA + Mars24 · LROC & HiRISE · Apollo Lunar Surface Journal</div>
+    </footer>
+  </section>
+
+</main>
+
+<!-- TERMINAL -->
+<div id="term" hidden>
+  <div class="term-head"><span>⌁ A·BNF CONSOLE — type `help`</span><button id="term-close">✕</button></div>
+  <div id="term-out"></div>
+  <div class="term-in"><span>❯</span><input id="term-input" placeholder="help · goto moon · storm · dust 80 · honor oppy · play wind" aria-label="console input" /></div>
+</div>
+
+<!-- DRAWER (ported from web-1) -->
+<div id="backdrop" hidden></div>
+<aside id="drawer" hidden aria-label="site report">
+  <button class="expand-btn" id="drawer-close">← BACK TO MAP</button>
+  <div class="chip-row" id="drawer-chips" style="margin-top:14px"></div>
+  <h3 id="drawer-title"></h3>
+  <div class="drawer-sub" id="drawer-sub"></div>
+  <div class="drawer-meta" id="drawer-meta"></div>
+  <p class="drawer-story" id="drawer-story"></p>
+  <h4 class="drawer-h">🎒 LEFT BEHIND</h4>
+  <ul class="equip" id="drawer-equip"></ul>
+  <div class="epitaph" id="drawer-epitaph"></div>
+  <div class="drawer-jump" id="drawer-jump"></div>
+</aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
